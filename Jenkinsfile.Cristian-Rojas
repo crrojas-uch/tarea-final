@@ -18,12 +18,10 @@ pipeline {
         stage('Stage install') {
             steps {
                 container('node') {
-                    dir('laboratorio3') {
                         sh '''
     		                npm install -g pnpm
                             pnpm install --frozen-lockfile
     		            '''
-                    }
                 }
             }
         }
@@ -31,12 +29,12 @@ pipeline {
         stage('Stage  test') {
             steps {
                 container('node') {
-		            dir('laboratorio3') {
+
 		                sh '''
                             pnpm test
                             pnpm test:e2e
                         '''
-		            }
+		            
                 }
             }
         }
