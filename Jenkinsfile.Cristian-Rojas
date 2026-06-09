@@ -43,16 +43,15 @@ pipeline {
 
         stage('Stage build') {
             steps {
-                container('docker') {
-                    dir('laboratorio3') {
-                        sh '''
-                            docker build -f Dockerfile -t ${IMAGE_NAME}:${TAG_NAME}
-                            docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${TAG_NAME}
-                            docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${APP_VERSION}
-                            docker tag ${IMAGE_NAME}:${TAG_NAME} ${GH_REPO}/${TAG_NAME}
-                            docker tag ${IMAGE_NAME}:${TAG_NAME} ${GH_REPO}/${APP_VERSION}                        
-                        '''
-                    }
+                container('docker') {                    
+                    sh '''
+                        docker build -f Dockerfile -t ${IMAGE_NAME}:${TAG_NAME}
+                        docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${TAG_NAME}
+                        docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${APP_VERSION}
+                        docker tag ${IMAGE_NAME}:${TAG_NAME} ${GH_REPO}/${TAG_NAME}
+                        docker tag ${IMAGE_NAME}:${TAG_NAME} ${GH_REPO}/${APP_VERSION}                        
+                    '''
+                    
                 }
             }
         }
@@ -60,22 +59,27 @@ pipeline {
         stage('Stage push') {
             steps {
                 container('docker') {
-                    docker.withRegistry('https://index.docker.io/v1/','dh-credencial'){
-                        sh '''
-                            docker push ${DH_REPO}:${TAG_NAME}
-                            docker push ${DH_REPO}:${APP_VERSION}
-                        '''
-                    }
-                    docker.withRegistry('https://ghcr.io','gh-credencial'){
-                        sh '''
-                            docker push ${GH_REPO}:${TAG_NAME}
-                            docker push ${GH_REPO}:${APP_VERSION}
-                        '''
+                    script {
+                        docker.withRegistry('https://ghcr.io','gh-credencial'){
+                            sh '''
+                                docker push ${GH_REPO}:${TAG_NAME}
+                                docker push ${GH_REPO}:${APP_VERSION}
+                            '''
+                        }
                     }
                 }
             }
         }
 
+        stage('Deploy') {
+            steps {
+                container('kubectl') {
+                    echo 'Desplegando en Kubernetes...'
+                    sh "kubectl apply -f entrega.yaml"
+                    sh "kubectl rollout status deployment/app-cristian-rojas -n ns-cristian-rojas"
+                }
+            }
+        }
         stage('Stage deploy') {
             steps {
                 container('node') {
