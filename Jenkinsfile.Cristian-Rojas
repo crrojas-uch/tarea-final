@@ -69,35 +69,17 @@ pipeline {
             }
         }
 
-        stage('Deploy') {
+        stage('Stage Deploy') {
             steps {
                 container('kubectl') {
                     echo 'Desplegando en Kubernetes...'
-                    sh "kubectl apply -f entrega.yaml"
-                    sh "kubectl rollout status deployment/app-cristian-rojas -n ns-cristian-rojas"
+                    sh '''
+                        kubectl apply -f entrega.yaml
+                        kubectl rollout status deployment/app-cristian-rojas -n ns-cristian-rojas
+                    '''
                 }
             }
         }
-        stage('Stage deploy') {
-            steps {
-                container('node') {
-        		    dir('laboratorio3') {
-		            	sh '''
-                            echo "Instalando herramienta de despliegue..."
-			                npm install -g apk-tools-node || true
-			
-            			    echo "Descargando binario kubectl..."
-                            wget -q https://dl.k8s.io/release/\$(wget -qO- https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-                            chmod +x ./kubectl
-                            
-                            echo "Aplicando manifiesto en Kubernetes..."
-                            ./kubectl apply -f entrega.yaml
-                            
-                            echo "¡Despliegue exitoso!"
-                	    '''
-		    }
-                }
-            }
-        }
+
     }
 }
