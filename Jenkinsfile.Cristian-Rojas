@@ -43,7 +43,7 @@ pipeline {
             steps {
                 container('docker') {                    
                     sh '''
-                        docker build -f Dockerfile -t ${IMAGE_NAME}:${TAG_NAME}
+                        docker build -f Dockerfile -t ${IMAGE_NAME}:${TAG_NAME} .
                         docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${TAG_NAME}
                         docker tag ${IMAGE_NAME}:${TAG_NAME} ${DH_REPO}/${APP_VERSION}
                         docker tag ${IMAGE_NAME}:${TAG_NAME} ${GH_REPO}/${TAG_NAME}
